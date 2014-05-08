@@ -2,43 +2,27 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
 public class p2p_user {
 
 	private static final int PORT = 8888;
+	private static final String ADDRESS = "localhost";
+	
+	public static Socket clientsocket;
 	public static String name="undefined";
+	
+	public static RSA Users_RSA= new RSA(1024);
+	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
 	
 	public static void main(String[] args) {
 		boolean connecting=true;
 		while(connecting){
 			try {
-				//create a connectable server
 				System.out.println("setting up server...");
 				
-				//start the server, have it listen for incoming socket connections (clients)
-				
-				/*the problem is if i run this main file again i already have a server holding that port spot.
-				 * if i have the next running user detect that there's a server, and connect to that server, the program will work,
-				 * but it wont be a DECENTRALIZED p2p chat.
-				 * TODO I can make it so that if the host user disconnects a different user is chosen to recreate the server and host.
-				 * TODO have graceful closes on everything
-				 * I think that a true decentralized p2p chat required a not-server based approach, which im not sure default java offers
-				 * 
-				 * 
-				//method 1
-				//i could have it so that the connected client sends the text to the server, which then relays it to all connected
-				//clients, but that isnt really p2p
-				
-				//method 2
-				//i think each client HAs to run a server, and everyone has to connect to each new clients server for this to work
-				
-				//if a group of peole are on lan, this group has to use method 1, and this group is a group.
-				//Every new person or group on a different ip uses method 1, and the groups connect via method 2
-				//i dont think multiple poeple on lan can have servers
-				*/
-
 				//if hosting the server, make a connection listener
 				try {
 					//start server
@@ -50,7 +34,7 @@ public class p2p_user {
 					System.out.println("Server already exists. Connecting...");
 				}
 		
-				Socket clientsocket = new Socket("localhost", PORT);
+				clientsocket = new Socket(ADDRESS, PORT);
 		        
 				//make sure to listen to your own socket, but this socket wont relay. Only server reciver does that
 				Thread reciver_thread = new Thread(new receiver(clientsocket,false));
@@ -60,29 +44,83 @@ public class p2p_user {
 				Scanner from_client = new Scanner(System.in);
 				
 				boolean connected=true;
-				System.out.println("You are connected! Type '/exit' to exit or /nick NEWNAME to change name.");
+				System.out.println("You are connected! Type /help for a list of commands.");
 					
 				while(connected){
+					//TODO if the host server disconnects, recreate it
+					
 					String users_input = from_client.nextLine();//get user input
 					
 					while(users_input!=null && users_input.length()>0){
-						//for user to exit
+						//for user to exit (others can see)
 						if(users_input.equals("/exit")){
 							connected=false;
 							connecting=false;
+							try{
+								new PrintWriter(clientsocket.getOutputStream(), true).println(name+" left the chat");
+							}catch(IOException u){
+								u.printStackTrace();
+								System.out.println("Could not write to output");
+							}
 						}
-						//for user to change name
-						if(users_input.matches("/nick [a-zA-Z_0-9]+")){
+						
+						//see commands (others can't see)
+						else if(users_input.equals("/help")){
+							System.out.println("Type '/exit' to exit");
+							System.out.println("Type '/nick NEWNAME' to change name.");
+							System.out.println("Type '/request USERSNAME key' to be able a private message to a user.");
+							System.out.println("Type '/dm USERSNAME m:MESSAGETEXT' to send a private message to a user you have a key from.");
+						}
+						
+						//for user to change name (others can see)
+						else if(users_input.contains("/nick")){
+							try{
+								new PrintWriter(clientsocket.getOutputStream(), true).println(name+" is now called " + users_input.substring(6));
+							}catch(IOException u){
+								u.printStackTrace();
+								System.out.println("Could not write to output");
+							}
 							name=users_input.substring(6);
 							System.out.println("You are now called "+name);
 						}
-						//write to the socket's output stream and the server picks it up
-						try{
-							new PrintWriter(clientsocket.getOutputStream(), true).println(name+":"+users_input);
-						}catch(IOException u){
-							u.printStackTrace();
-							System.out.println("Could not write to output");
+						
+						//for user to send a dm to a user using their public key (others can only see encrypted)
+						else if(users_input.contains("/dm")){
+							String dm_message=users_input.substring(users_input.indexOf("m:")+2);
+							String username=users_input.substring(users_input.indexOf("/dm")+4,users_input.indexOf(" m:"));
+							boolean founduser=false;
+							
+							for(RSA user:other_users_public_keys){
+								if(user.name().equals(username)){
+									founduser=true;
+									try{
+										new PrintWriter(clientsocket.getOutputStream(), true).println(name+":" +
+												"DM-"+username+
+												" m-"+user.Encrypt(dm_message));
+									}catch(IOException u){
+										u.printStackTrace();
+										System.out.println("Could not write to output");
+									}
+									System.out.println("Sucessfully send dm to "+username);
+								}
+							}
+							
+							if(!founduser){
+								System.out.println("You do not have the key for user " + username + ". Request it and retry your message.");
+							}
 						}
+						
+						//anything not specifically caught by commands
+						else{
+							//write to the socket's output stream and the server picks it up
+							try{
+								new PrintWriter(clientsocket.getOutputStream(), true).println(name+":"+users_input);
+							}catch(IOException u){
+								u.printStackTrace();
+								System.out.println("Could not write to output");
+							}
+						}
+						
 						//flush input
 						users_input=null;
 					}
