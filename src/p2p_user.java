@@ -97,11 +97,11 @@ public class p2p_user {
 										new PrintWriter(clientsocket.getOutputStream(), true).println(name+":" +
 												"DM-"+username+
 												" m-"+user.Encrypt(dm_message));
+										System.out.println("Sucessfully send dm to "+username);
 									}catch(IOException u){
 										u.printStackTrace();
 										System.out.println("Could not write to output");
 									}
-									System.out.println("Sucessfully send dm to "+username);
 								}
 							}
 							
