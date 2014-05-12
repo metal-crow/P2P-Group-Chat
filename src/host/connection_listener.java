@@ -1,3 +1,4 @@
+package host;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -23,8 +24,8 @@ public class connection_listener implements Runnable{
 				//put this new accepted client in arraylist, which is read by each reciver so it can send each user's text to all clients
 				connected_users.add(clientSocket);
 				
-				//server must listen to each connected socket
-				Thread reciver_thread = new Thread(new receiver(clientSocket,true));
+				//server must listen to each connected socket and relay their text
+				Thread reciver_thread = new Thread(new relay_receiver(clientSocket));
 				reciver_thread.start();
 				
 				//tell the client their default name

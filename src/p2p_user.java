@@ -1,9 +1,12 @@
+import host.connection_listener;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
+
 
 
 public class p2p_user {
@@ -36,8 +39,8 @@ public class p2p_user {
 		
 				clientsocket = new Socket(ADDRESS, PORT);
 		        
-				//make sure to listen to your own socket, but this socket wont relay. Only server reciver does that
-				Thread reciver_thread = new Thread(new receiver(clientsocket,false));
+				//make sure to listen to your own socket.
+				Thread reciver_thread = new Thread(new receiver_listener());
 				reciver_thread.start();
 				
 		        //listen for input from this client
@@ -48,6 +51,18 @@ public class p2p_user {
 					
 				while(connected){
 					//TODO if the host server disconnects, recreate it
+					if(!clientsocket.isConnected()){
+						System.out.println("Recreating server");
+						try{
+							//start server
+							ServerSocket server=new ServerSocket(PORT);
+							//start the listener for connecting clients
+					        Thread connection_listener_thread = new Thread(new connection_listener(server));
+					        connection_listener_thread.start();
+						}catch(IOException e){
+							e.printStackTrace();
+						}
+					}
 					
 					String users_input = from_client.nextLine();//get user input
 					

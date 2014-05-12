@@ -5,9 +5,10 @@ Rudimentary P2P (only technically) group chat I've made.
 
 Currently in beta.  
 It can communicate with other connected users over LAN.  
+Using RSA, it allows people to DM each other securely and privately.
   
-Next steps are (probably in order of implementation)  
-	-Implement encryption. Using RSA, allow people to DM each other  
+Next steps are (probably in order of implementation)
+	-GUI
 	-Block feature  
 	-Allow other connected users to take over as host if host disconnects  
 	-Allow internet connections and have multiple hosts managing their LAN groups able to connect (ideally this will be more like true P2P)  
