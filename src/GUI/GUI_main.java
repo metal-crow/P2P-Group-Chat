@@ -1,10 +1,14 @@
 package GUI;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 
 public class GUI_main{
@@ -32,8 +36,18 @@ class GUI extends JPanel{
 		this.width=width;
 		this.height=height;
 		
+		chat_text.setEditable(false);
 		JScrollPane chat_text_sp = new JScrollPane(chat_text);
 		
+		JTextField input = new JTextField();
+		
+		JButton send = new JButton("Send");
+		send.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+            	//input.
+            	//send text
+            }
+		});
 	}
 	
 	public Dimension getPreferredSize() {
