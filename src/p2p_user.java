@@ -40,7 +40,7 @@ public class p2p_user {
 				clientsocket = new Socket(ADDRESS, PORT);
 		        
 				//make sure to listen to your own socket.
-				Thread reciver_thread = new Thread(new receiver_listener());
+				Thread reciver_thread = new Thread(new listener_receiver());
 				reciver_thread.start();
 				
 		        //listen for input from this client
@@ -75,8 +75,11 @@ public class p2p_user {
 								new PrintWriter(clientsocket.getOutputStream(), true).println(name+" left the chat");
 							}catch(IOException u){
 								u.printStackTrace();
-								System.out.println("Could not write to output");
+								System.out.println("Could not write to output (exiting)");
 							}
+							System.out.println("Bye!");
+							from_client.close();
+							clientsocket.close();
 						}
 						
 						//see commands (others can't see)
@@ -100,9 +103,10 @@ public class p2p_user {
 						}
 						
 						//for user to send a dm to a user using their public key (others can only see encrypted)
-						else if(users_input.contains("/dm")){
-							String dm_message=users_input.substring(users_input.indexOf("m:")+2);
-							String username=users_input.substring(users_input.indexOf("/dm")+4,users_input.indexOf(" m:"));
+						else if(users_input.toLowerCase().contains("/dm")){
+							//since a dm is supposed to be private, try to be forgiving if user fudges command
+							String dm_message=users_input.toLowerCase().substring(users_input.indexOf("m:")+2);
+							String username=users_input.toLowerCase().substring(7,users_input.indexOf(" m:"));
 							boolean founduser=false;
 							
 							for(RSA user:other_users_public_keys){
@@ -140,11 +144,6 @@ public class p2p_user {
 						users_input=null;
 					}
 				}
-					
-				//exit
-				System.out.println("Bye!");
-				from_client.close();
-				clientsocket.close();
 				
 			} catch (IOException e) {
 				System.out.println("Could not connect. Do you want to retry? Y/N");
