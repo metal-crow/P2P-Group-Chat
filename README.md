@@ -6,10 +6,10 @@ Rudimentary P2P (only technically) group chat I've made.
 Currently in beta.  
 It can communicate with other connected users over LAN.  
 Using RSA, it allows people to DM each other securely and privately.
+It allows users to selectively block and unblock other users based on name.
   
 Next steps are (probably in order of implementation)
 	-GUI
-	-Block feature  
 	-Allow other connected users to take over as host if host disconnects  
 	-Allow internet connections and have multiple hosts managing their LAN groups able to connect (ideally this will be more like true P2P)  
   
@@ -25,6 +25,8 @@ More details for group chat:
 •	/help (list commands)  
 •	/request USERNAME key (get a user’s public key)  
 •	/dm USERNAME m:MESSAGE (send a dm to a user)  
+•	/block USERNAME (blocks this user's DM's and messages)  
+•	/unblock USERNAME (unblocks this user)  
 •	More may be added  
 There are also commands that the socket listener listens for. These are  
 •	server-assigned-nick: (change user’s name)  

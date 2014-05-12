@@ -30,7 +30,7 @@ public class listener_receiver implements Runnable{
 			//this prevents null reading, and blocks until such time
 			if(inputstring!=null && inputstring.length()>0){
 				//check to see if its the server assiging name
-				if(inputstring.contains("server-assigned-nick: ")){
+				if(inputstring.startsWith("server-assigned-nick: ")){
 					p2p_user.name=inputstring.substring(22);
 					System.out.println("you are called "+p2p_user.name);
 				}
@@ -53,7 +53,7 @@ public class listener_receiver implements Runnable{
 				}
 				
 				//if someone else is broadcasting their public key, store it
-				else if(inputstring.contains("Public Key for ")){
+				else if(inputstring.startsWith("Public Key for ")){
 					BigInteger n=new BigInteger(inputstring.substring(inputstring.indexOf("n-")+2, inputstring.indexOf("e-")));
 					BigInteger e=new BigInteger(inputstring.substring(inputstring.indexOf("e-")+2));
 					String name=inputstring.substring(inputstring.indexOf("Public Key for ")+15,inputstring.indexOf(":n-"));
@@ -63,14 +63,17 @@ public class listener_receiver implements Runnable{
 				}
 				
 				//if someone is sending a dm, check if its directed to this user, and decrypt it
-				else if(inputstring.contains("DM-"+p2p_user.name)){
+				else if(inputstring.contains("DM-"+p2p_user.name) && !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
 					BigInteger encryptedmss= new BigInteger(inputstring.substring(inputstring.indexOf("m-")+2));
 					System.out.println(inputstring.substring(0,inputstring.indexOf("m-")+2)
 										+new String(p2p_user.Users_RSA.Decrypt(encryptedmss).toByteArray()));
 				}
 				
 				else{
-					System.out.println(inputstring);
+					//check to make sure text can be parsed to check against blacklist, then check blacklist
+					if(!inputstring.contains(":") || !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
+						System.out.println(inputstring);
+					}
 				}
 				
 				//have to flush string

@@ -26,7 +26,7 @@ public class relay_receiver implements Runnable{
 				String inputstring=get.readLine();
 				
 				//this prevents null reading, and blocks until such time
-				while(inputstring!=null && inputstring.length()>0){
+				if(inputstring!=null && inputstring.length()>0){
 					
 					//if the user exits, remove from list and close thread
 					if(inputstring.equals("/exit")){

@@ -20,6 +20,8 @@ public class p2p_user {
 	public static RSA Users_RSA= new RSA(1024);
 	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
 	
+	public static ArrayList<String> blacklist=new ArrayList<String>();
+			
 	public static void main(String[] args) {
 		boolean connecting=true;
 		while(connecting){
@@ -51,7 +53,7 @@ public class p2p_user {
 					
 				while(connected){
 					//TODO if the host server disconnects, recreate it
-					if(!clientsocket.isConnected()){
+					/*if(!clientsocket.isConnected()){
 						System.out.println("Recreating server");
 						try{
 							//start server
@@ -62,11 +64,11 @@ public class p2p_user {
 						}catch(IOException e){
 							e.printStackTrace();
 						}
-					}
+					}*/
 					
 					String users_input = from_client.nextLine();//get user input
 					
-					while(users_input!=null && users_input.length()>0){
+					if(users_input!=null && users_input.length()>0){
 						//for user to exit (others can see)
 						if(users_input.equals("/exit")){
 							connected=false;
@@ -88,10 +90,12 @@ public class p2p_user {
 							System.out.println("Type '/nick NEWNAME' to change name.");
 							System.out.println("Type '/request USERSNAME key' to be able a private message to a user.");
 							System.out.println("Type '/dm USERSNAME m:MESSAGETEXT' to send a private message to a user you have a key from.");
+							System.out.println("Type '/block USERNAME' to not see DM's and messages from this user");
+							System.out.println("Type '/unblock USERNAME to unblock a user");
 						}
 						
 						//for user to change name (others can see)
-						else if(users_input.contains("/nick")){
+						else if(users_input.startsWith("/nick")){
 							try{
 								new PrintWriter(clientsocket.getOutputStream(), true).println(name+" is now called " + users_input.substring(6));
 							}catch(IOException u){
@@ -103,10 +107,10 @@ public class p2p_user {
 						}
 						
 						//for user to send a dm to a user using their public key (others can only see encrypted)
-						else if(users_input.toLowerCase().contains("/dm")){
+						else if(users_input.toLowerCase().startsWith("/dm")){
 							//since a dm is supposed to be private, try to be forgiving if user fudges command
-							String dm_message=users_input.toLowerCase().substring(users_input.indexOf("m:")+2);
-							String username=users_input.toLowerCase().substring(7,users_input.indexOf(" m:"));
+							String dm_message=users_input.substring(users_input.toLowerCase().indexOf("m:")+2);
+							String username=users_input.substring(4,users_input.toLowerCase().indexOf(" m:"));
 							boolean founduser=false;
 							
 							for(RSA user:other_users_public_keys){
@@ -126,6 +130,26 @@ public class p2p_user {
 							
 							if(!founduser){
 								System.out.println("You do not have the key for user " + username + ". Request it and retry your message.");
+							}
+						}
+						
+						//NOTE: i know a user can just change their nick, but this is supposed to be an anonymous chat,
+						//so i can't block a different way. Besides, if the user doesn't know they're blocked, this works.
+						
+						//add user to block list (not seen)
+						else if(users_input.startsWith("/block")){
+							blacklist.add(users_input.substring(7));
+							System.out.println("Blocked " + users_input.substring(7));
+						}
+						//add user to unblock list (not seen)
+						else if(users_input.startsWith("/unblock")){
+							String user=users_input.substring(9);
+							if(blacklist.contains(user)){
+								blacklist.remove(user);
+								System.out.println("Unblocked " + user);
+							}
+							else{
+								System.out.println("User " +user+ " not in list of blocked users");
 							}
 						}
 						
