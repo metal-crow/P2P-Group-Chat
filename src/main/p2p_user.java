@@ -1,3 +1,4 @@
+package main;
 import host.connection_listener;
 
 import java.io.IOException;
@@ -7,6 +8,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.JFrame;
+
+import GUI.GUI;
 
 
 public class p2p_user {
@@ -21,12 +25,27 @@ public class p2p_user {
 	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
 	
 	public static ArrayList<String> blacklist=new ArrayList<String>();
-			
+	
+	private static int height,width=450;
+	//other classes need the gui's settext method
+	public static GUI gui=new GUI(height,width);
+	
+	//this is a global public so the user's input in the gui can edit this
+	public static String users_input="";
+	
 	public static void main(String[] args) {
+		
+		JFrame f = new JFrame("Chat Room");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setSize(height,width);
+		f.add(gui);
+        f.pack();
+        f.setVisible(true);
+		
 		boolean connecting=true;
 		while(connecting){
 			try {
-				System.out.println("setting up server...");
+				gui.set_text("setting up server...");
 				
 				//if hosting the server, make a connection listener
 				try {
@@ -36,7 +55,7 @@ public class p2p_user {
 			        Thread connection_listener_thread = new Thread(new connection_listener(server));
 			        connection_listener_thread.start();
 				} catch (IOException e) {
-					System.out.println("Server already exists. Connecting...");
+					gui.set_text("Server already exists. Connecting...");
 				}
 		
 				clientsocket = new Socket(ADDRESS, PORT);
@@ -46,10 +65,10 @@ public class p2p_user {
 				reciver_thread.start();
 				
 		        //listen for input from this client
-				Scanner from_client = new Scanner(System.in);
+				//Scanner from_client = new Scanner(System.in);
 				
 				boolean connected=true;
-				System.out.println("You are connected! Type /help for a list of commands.");
+				gui.set_text("You are connected! Type /help for a list of commands.");
 					
 				while(connected){
 					//TODO if the host server disconnects, recreate it
@@ -66,7 +85,7 @@ public class p2p_user {
 						}
 					}*/
 					
-					String users_input = from_client.nextLine();//get user input
+					//String users_input = from_client.nextLine();//get user input
 					
 					if(users_input!=null && users_input.length()>0){
 						//for user to exit (others can see)
@@ -80,7 +99,7 @@ public class p2p_user {
 								System.out.println("Could not write to output (exiting)");
 							}
 							System.out.println("Bye!");
-							from_client.close();
+							//from_client.close();
 							clientsocket.close();
 						}
 						

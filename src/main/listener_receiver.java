@@ -1,3 +1,4 @@
+package main;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,7 +33,7 @@ public class listener_receiver implements Runnable{
 				//check to see if its the server assiging name
 				if(inputstring.startsWith("server-assigned-nick: ")){
 					p2p_user.name=inputstring.substring(22);
-					System.out.println("you are called "+p2p_user.name);
+					p2p_user.gui.set_text("you are called "+p2p_user.name);
 				}
 				
 				//if someone wants user's public key, broadcast it
@@ -45,7 +46,7 @@ public class listener_receiver implements Runnable{
 								"n-"+publickey[0] +
 								"e-"+publickey[1]);
 						
-						System.out.println("Broadcast public key");
+						p2p_user.gui.set_text("Broadcast public key");
 					}catch(IOException u){
 						u.printStackTrace();
 						System.out.println("Could not write to output");
@@ -59,20 +60,20 @@ public class listener_receiver implements Runnable{
 					String name=inputstring.substring(inputstring.indexOf("Public Key for ")+15,inputstring.indexOf(":n-"));
 					
 					p2p_user.other_users_public_keys.add(new RSA(n,e,name));
-					System.out.println("Got "+name+" public key");
+					p2p_user.gui.set_text("Got "+name+" public key");
 				}
 				
 				//if someone is sending a dm, check if its directed to this user, and decrypt it
 				else if(inputstring.contains("DM-"+p2p_user.name) && !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
 					BigInteger encryptedmss= new BigInteger(inputstring.substring(inputstring.indexOf("m-")+2));
-					System.out.println(inputstring.substring(0,inputstring.indexOf("m-")+2)
+					p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf("m-")+2)
 										+new String(p2p_user.Users_RSA.Decrypt(encryptedmss).toByteArray()));
 				}
 				
 				else{
 					//check to make sure text can be parsed to check against blacklist, then check blacklist
 					if(!inputstring.contains(":") || !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
-						System.out.println(inputstring);
+						p2p_user.gui.set_text(inputstring);
 					}
 				}
 				
