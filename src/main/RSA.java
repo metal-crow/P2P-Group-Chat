@@ -1,5 +1,5 @@
 package main;
-import java.io.UnsupportedEncodingException;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -86,15 +86,20 @@ public class RSA {
 	}
 	
 	public BigInteger Encrypt(String code){
-		BigInteger code_numeric = new BigInteger(code.getBytes());
+		if(code.length()>0){
+			BigInteger code_numeric = new BigInteger(code.getBytes());
 
-		BigInteger encrypted_numeric = code_numeric.modPow(e, n);
+			BigInteger encrypted_numeric = code_numeric.modPow(e, n);
 		
-		return encrypted_numeric;
+			return encrypted_numeric;
+		}
+		else{
+			return BigInteger.ZERO;
+		}
 	}
 	
-	public BigInteger Decrypt(BigInteger code){
-		return code.modPow(d, n);
+	public String Decrypt(BigInteger code){
+		return new String(code.modPow(d, n).toByteArray());
 	}
 	
 	public BigInteger[] publickey(){
@@ -103,25 +108,6 @@ public class RSA {
 	
 	public String name(){
 		return name;
-	}
-	
-	public static void main(String[] args) throws UnsupportedEncodingException {
-		String secretcode="this is a secret code";
-		int rsa_bitlength=1024;
-		
-		RSA r = new RSA(rsa_bitlength);
-		
-		System.out.println(secretcode);
-		System.out.println(new BigInteger(secretcode.getBytes())+"\n");
-		
-		BigInteger encrypted_code = r.Encrypt(secretcode);
-		System.out.println(encrypted_code);
-		
-		System.out.println("");
-		BigInteger decrypted_code = r.Decrypt(encrypted_code);
-		System.out.println(decrypted_code);
-		System.out.println(new String(decrypted_code.toByteArray()));
-
 	}
 
 }

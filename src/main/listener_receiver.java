@@ -30,6 +30,9 @@ public class listener_receiver implements Runnable{
 			
 			//this prevents null reading, and blocks until such time
 			if(inputstring!=null && inputstring.length()>0){
+				
+				System.out.println("getting " + inputstring);
+				
 				//check to see if its the server assiging name
 				if(inputstring.startsWith("server-assigned-nick: ")){
 					p2p_user.name=inputstring.substring(22);
@@ -59,7 +62,8 @@ public class listener_receiver implements Runnable{
 					BigInteger e=new BigInteger(inputstring.substring(inputstring.indexOf("e-")+2));
 					String name=inputstring.substring(inputstring.indexOf("Public Key for ")+15,inputstring.indexOf(":n-"));
 					
-					if(!name.equals(p2p_user.name)){
+					//if its not your public key and you dont already have it
+					if(!name.equals(p2p_user.name) && !p2p_user.other_users_public_keys.contains(name)){
 						p2p_user.other_users_public_keys.add(new RSA(n,e,name));
 						p2p_user.gui.set_text("Got "+name+" public key");
 					}
@@ -69,7 +73,7 @@ public class listener_receiver implements Runnable{
 				else if(inputstring.contains("DM-"+p2p_user.name) && !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
 					BigInteger encryptedmss= new BigInteger(inputstring.substring(inputstring.indexOf("m-")+2));
 					p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf("m-")+2)
-										+new String(p2p_user.Users_RSA.Decrypt(encryptedmss).toByteArray()));
+										+p2p_user.Users_RSA.Decrypt(encryptedmss));
 				}
 				
 				//if someone exits
@@ -78,8 +82,9 @@ public class listener_receiver implements Runnable{
 				}
 				
 				else{
+						System.out.println("not catching " + inputstring);
 					//check to make sure text can be parsed to check against blacklist, then check blacklist
-					if(!inputstring.contains(":") || !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
+					if(inputstring.contains(":") && !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
 						p2p_user.gui.set_text(inputstring);
 					}
 				}
