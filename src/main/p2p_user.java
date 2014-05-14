@@ -21,28 +21,27 @@ public class p2p_user {
 	public static Socket clientsocket;
 	public static String name="undefined";
 	
+	private static boolean connecting=true;
+	private static boolean connected=true;
+	
 	public static RSA Users_RSA= new RSA(1024);
 	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
 	
 	public static ArrayList<String> blacklist=new ArrayList<String>();
 	
-	private static int height,width=450;
+	private static int height=450;
+	private static int width=450;
 	//other classes need the gui's settext method
 	public static GUI gui=new GUI(height,width);
-	
-	//this is a global public so the user's input in the gui can edit this
-	public static String users_input="";
+	private static JFrame f = new JFrame("Chat Room");
 	
 	public static void main(String[] args) {
-		
-		JFrame f = new JFrame("Chat Room");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         f.setSize(height,width);
 		f.add(gui);
         f.pack();
         f.setVisible(true);
 		
-		boolean connecting=true;
 		while(connecting){
 			try {
 				gui.set_text("setting up server...");
@@ -64,14 +63,11 @@ public class p2p_user {
 				Thread reciver_thread = new Thread(new listener_receiver());
 				reciver_thread.start();
 				
-		        //listen for input from this client
-				//Scanner from_client = new Scanner(System.in);
-				
-				boolean connected=true;
 				gui.set_text("You are connected! Type /help for a list of commands.");
 					
 				while(connected){
 					//TODO if the host server disconnects, recreate it
+					
 					/*if(!clientsocket.isConnected()){
 						System.out.println("Recreating server");
 						try{
@@ -84,112 +80,10 @@ public class p2p_user {
 							e.printStackTrace();
 						}
 					}*/
-					
-					//String users_input = from_client.nextLine();//get user input
-					
-					if(users_input!=null && users_input.length()>0){
-						//for user to exit (others can see)
-						if(users_input.equals("/exit")){
-							connected=false;
-							connecting=false;
-							try{
-								new PrintWriter(clientsocket.getOutputStream(), true).println(name+" left the chat");
-							}catch(IOException u){
-								u.printStackTrace();
-								System.out.println("Could not write to output (exiting)");
-							}
-							System.out.println("Bye!");
-							//from_client.close();
-							clientsocket.close();
-						}
-						
-						//see commands (others can't see)
-						else if(users_input.equals("/help")){
-							System.out.println("Type '/exit' to exit");
-							System.out.println("Type '/nick NEWNAME' to change name.");
-							System.out.println("Type '/request USERSNAME key' to be able a private message to a user.");
-							System.out.println("Type '/dm USERSNAME m:MESSAGETEXT' to send a private message to a user you have a key from.");
-							System.out.println("Type '/block USERNAME' to not see DM's and messages from this user");
-							System.out.println("Type '/unblock USERNAME to unblock a user");
-						}
-						
-						//for user to change name (others can see)
-						else if(users_input.startsWith("/nick")){
-							try{
-								new PrintWriter(clientsocket.getOutputStream(), true).println(name+" is now called " + users_input.substring(6));
-							}catch(IOException u){
-								u.printStackTrace();
-								System.out.println("Could not write to output");
-							}
-							name=users_input.substring(6);
-							System.out.println("You are now called "+name);
-						}
-						
-						//for user to send a dm to a user using their public key (others can only see encrypted)
-						else if(users_input.toLowerCase().startsWith("/dm")){
-							//since a dm is supposed to be private, try to be forgiving if user fudges command
-							String dm_message=users_input.substring(users_input.toLowerCase().indexOf("m:")+2);
-							String username=users_input.substring(4,users_input.toLowerCase().indexOf(" m:"));
-							boolean founduser=false;
-							
-							for(RSA user:other_users_public_keys){
-								if(user.name().equals(username)){
-									founduser=true;
-									try{
-										new PrintWriter(clientsocket.getOutputStream(), true).println(name+":" +
-												"DM-"+username+
-												" m-"+user.Encrypt(dm_message));
-										System.out.println("Sucessfully send dm to "+username);
-									}catch(IOException u){
-										u.printStackTrace();
-										System.out.println("Could not write to output");
-									}
-								}
-							}
-							
-							if(!founduser){
-								System.out.println("You do not have the key for user " + username + ". Request it and retry your message.");
-							}
-						}
-						
-						//NOTE: i know a user can just change their nick, but this is supposed to be an anonymous chat,
-						//so i can't block a different way. Besides, if the user doesn't know they're blocked, this works.
-						
-						//add user to block list (not seen)
-						else if(users_input.startsWith("/block")){
-							blacklist.add(users_input.substring(7));
-							System.out.println("Blocked " + users_input.substring(7));
-						}
-						//add user to unblock list (not seen)
-						else if(users_input.startsWith("/unblock")){
-							String user=users_input.substring(9);
-							if(blacklist.contains(user)){
-								blacklist.remove(user);
-								System.out.println("Unblocked " + user);
-							}
-							else{
-								System.out.println("User " +user+ " not in list of blocked users");
-							}
-						}
-						
-						//anything not specifically caught by commands
-						else{
-							//write to the socket's output stream and the server picks it up
-							try{
-								new PrintWriter(clientsocket.getOutputStream(), true).println(name+":"+users_input);
-							}catch(IOException u){
-								u.printStackTrace();
-								System.out.println("Could not write to output");
-							}
-						}
-						
-						//flush input
-						users_input=null;
-					}
 				}
 				
 			} catch (IOException e) {
-				System.out.println("Could not connect. Do you want to retry? Y/N");
+				gui.set_text("Could not connect. Do you want to retry? Y/N");
 				Scanner in = new Scanner(System.in);
 				if(in.next().toLowerCase().equals("n")){
 					connecting=false;
@@ -198,4 +92,108 @@ public class p2p_user {
 			}
 		}
 	}
+	
+	public static void handle_GUI_input(String users_input){
+		//for user to exit (others can see)
+		if(users_input.equals("/exit")){
+			connected=false;
+			connecting=false;
+			try{
+				new PrintWriter(clientsocket.getOutputStream(), true).println(name+" left the chat");
+			}catch(IOException u){
+				u.printStackTrace();
+				System.out.println("Could not write to output (exiting)");
+			}
+			System.out.println("Bye!");
+			try {
+				clientsocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("could not exit");
+			}
+			f.dispose();
+			
+		}
+		
+		//see commands (others can't see)
+		else if(users_input.equals("/help")){
+			gui.set_text("Type '/exit' to exit");
+			gui.set_text("Type '/nick NEWNAME' to change name.");
+			gui.set_text("Type '/request USERSNAME key' to be able a private message to a user.");
+			gui.set_text("Type '/dm USERSNAME m:MESSAGETEXT' to send a private message to a user you have a key from.");
+			gui.set_text("Type '/block USERNAME' to not see DM's and messages from this user");
+			gui.set_text("Type '/unblock USERNAME' to unblock a user");
+		}
+		
+		//for user to change name (others can see)
+		else if(users_input.startsWith("/nick")){
+			try{
+				new PrintWriter(clientsocket.getOutputStream(), true).println(name+" is now called " + users_input.substring(6));
+			}catch(IOException u){
+				u.printStackTrace();
+				System.out.println("Could not write to output");
+			}
+			name=users_input.substring(6);
+			gui.set_text("You are now called "+name);
+		}
+		
+		//for user to send a dm to a user using their public key (others can only see encrypted)
+		else if(users_input.toLowerCase().startsWith("/dm")){
+			//since a dm is supposed to be private, try to be forgiving if user fudges command
+			String dm_message=users_input.substring(users_input.toLowerCase().indexOf("m:")+2);
+			String username=users_input.substring(4,users_input.toLowerCase().indexOf(" m:"));
+			boolean founduser=false;
+			
+			for(RSA user:other_users_public_keys){
+				if(user.name().equals(username)){
+					founduser=true;
+					try{
+						new PrintWriter(clientsocket.getOutputStream(), true).println(name+":" +
+								"DM-"+username+
+								" m-"+user.Encrypt(dm_message));
+						gui.set_text("Sucessfully send dm to "+username);
+					}catch(IOException u){
+						u.printStackTrace();
+						System.out.println("Could not write to output");
+					}
+				}
+			}
+			
+			if(!founduser){
+				gui.set_text("You do not have the key for user " + username + ". Request it and retry your message.");
+			}
+		}
+		
+		//NOTE: i know a user can just change their nick, but this is supposed to be an anonymous chat,
+		//so i can't block a different way. Besides, if the user doesn't know they're blocked, this works.
+		
+		//add user to block list (not seen)
+		else if(users_input.startsWith("/block")){
+			blacklist.add(users_input.substring(7));
+			gui.set_text("Blocked " + users_input.substring(7));
+		}
+		//add user to unblock list (not seen)
+		else if(users_input.startsWith("/unblock")){
+			String user=users_input.substring(9);
+			if(blacklist.contains(user)){
+				blacklist.remove(user);
+				gui.set_text("Unblocked " + user);
+			}
+			else{
+				gui.set_text("User " +user+ " not in list of blocked users");
+			}
+		}
+		
+		//anything not specifically caught by commands
+		else{
+			//write to the socket's output stream and the server picks it up
+			try{
+				new PrintWriter(clientsocket.getOutputStream(), true).println(name+":"+users_input);
+			}catch(IOException u){
+				u.printStackTrace();
+				System.out.println("Could not write to output");
+			}
+		}
+	}
+	
 }
