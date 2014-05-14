@@ -22,7 +22,7 @@ public class p2p_user {
 	public static String name="undefined";
 	
 	private static boolean connecting=true;
-	private static boolean connected=true;
+	public static boolean connected=true;
 	
 	public static RSA Users_RSA= new RSA(1024);
 	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
@@ -99,17 +99,15 @@ public class p2p_user {
 			connected=false;
 			connecting=false;
 			try{
-				new PrintWriter(clientsocket.getOutputStream(), true).println(name+" left the chat");
+				new PrintWriter(clientsocket.getOutputStream(), true).println(name+":"+users_input);
 			}catch(IOException u){
-				u.printStackTrace();
-				System.out.println("Could not write to output (exiting)");
+				gui.set_text("ERROR: unable to alert others to exit");
 			}
-			System.out.println("Bye!");
 			try {
 				clientsocket.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-				System.out.println("could not exit");
+				gui.set_text("ERROR: Could not exit");
 			}
 			f.dispose();
 			
@@ -131,7 +129,7 @@ public class p2p_user {
 				new PrintWriter(clientsocket.getOutputStream(), true).println(name+" is now called " + users_input.substring(6));
 			}catch(IOException u){
 				u.printStackTrace();
-				System.out.println("Could not write to output");
+				gui.set_text("ERROR: unable to alert others to name change");
 			}
 			name=users_input.substring(6);
 			gui.set_text("You are now called "+name);
@@ -151,10 +149,9 @@ public class p2p_user {
 						new PrintWriter(clientsocket.getOutputStream(), true).println(name+":" +
 								"DM-"+username+
 								" m-"+user.Encrypt(dm_message));
-						gui.set_text("Sucessfully send dm to "+username);
+						gui.set_text("Sucessfully send dm message:" +dm_message+" to "+username);
 					}catch(IOException u){
-						u.printStackTrace();
-						System.out.println("Could not write to output");
+						gui.set_text("ERROR: unable to send DM");
 					}
 				}
 			}
@@ -190,8 +187,7 @@ public class p2p_user {
 			try{
 				new PrintWriter(clientsocket.getOutputStream(), true).println(name+":"+users_input);
 			}catch(IOException u){
-				u.printStackTrace();
-				System.out.println("Could not write to output");
+				gui.set_text("ERROR: Unable to send.");
 			}
 		}
 	}

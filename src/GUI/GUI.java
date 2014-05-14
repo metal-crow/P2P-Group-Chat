@@ -13,6 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.text.DefaultCaret;
 
 import main.p2p_user;
 
@@ -31,6 +32,9 @@ public class GUI extends JPanel{
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
 		chat_text.setEditable(false);
+		DefaultCaret caret = (DefaultCaret)chat_text.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		
 		JScrollPane chat_text_sp = new JScrollPane(chat_text);
 		
 		/*input.addActionListener(new ActionListener() {

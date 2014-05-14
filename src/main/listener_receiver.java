@@ -19,7 +19,7 @@ public class listener_receiver implements Runnable{
 		}
 		
 		//TODO this gets a socketclosed error when user exits
-		while(!p2p_user.clientsocket.isClosed()){
+		while(p2p_user.connected){
 			String inputstring = null;
 			try {
 				inputstring = get.readLine();
@@ -46,10 +46,10 @@ public class listener_receiver implements Runnable{
 								"n-"+publickey[0] +
 								"e-"+publickey[1]);
 						
-						p2p_user.gui.set_text("Broadcast public key");
+						p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf(":")) +" requested your public key. It has been broadcast.");
 					}catch(IOException u){
 						u.printStackTrace();
-						System.out.println("Could not write to output");
+						p2p_user.gui.set_text("ERROR: unable to broadcast public key");
 					}
 				}
 				
@@ -59,8 +59,10 @@ public class listener_receiver implements Runnable{
 					BigInteger e=new BigInteger(inputstring.substring(inputstring.indexOf("e-")+2));
 					String name=inputstring.substring(inputstring.indexOf("Public Key for ")+15,inputstring.indexOf(":n-"));
 					
-					p2p_user.other_users_public_keys.add(new RSA(n,e,name));
-					p2p_user.gui.set_text("Got "+name+" public key");
+					if(!name.equals(p2p_user.name)){
+						p2p_user.other_users_public_keys.add(new RSA(n,e,name));
+						p2p_user.gui.set_text("Got "+name+" public key");
+					}
 				}
 				
 				//if someone is sending a dm, check if its directed to this user, and decrypt it
@@ -68,6 +70,11 @@ public class listener_receiver implements Runnable{
 					BigInteger encryptedmss= new BigInteger(inputstring.substring(inputstring.indexOf("m-")+2));
 					p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf("m-")+2)
 										+new String(p2p_user.Users_RSA.Decrypt(encryptedmss).toByteArray()));
+				}
+				
+				//if someone exits
+				else if(inputstring.endsWith("/exit")){
+					p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf(":")) + " left the chat");
 				}
 				
 				else{

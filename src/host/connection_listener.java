@@ -36,7 +36,7 @@ public class connection_listener implements Runnable{
 		        
 			} catch (IOException e) {
 				e.printStackTrace();
-				System.out.println("Could not accept new user");
+				p2p_user.gui.set_text("ERROR: Could not accept new user");
 			}
 		}	
 	}

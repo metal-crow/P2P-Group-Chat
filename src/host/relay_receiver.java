@@ -27,25 +27,21 @@ public class relay_receiver implements Runnable{
 				
 				//this prevents null reading, and blocks until such time
 				if(inputstring!=null && inputstring.length()>0){
-					
-					//if the user exits, remove from list and close thread
-					if(inputstring.equals("/exit")){
-						System.out.println(inputstring);
-						connection_listener.connected_users.remove(clientSocket);
-						return;
-					}
-				
+
 					//relay this text to all connected users
 					for(Socket client:connection_listener.connected_users){
-						//also, dont send the message from the user back to the user that sent it 
-						if(!client.equals(clientSocket)){
-							try{
-								new PrintWriter(client.getOutputStream(), true).println(inputstring);
-							}catch(IOException u){
-								u.printStackTrace();
-								System.out.println("Could not relay to client:" +client);
-							}
+						try{
+							new PrintWriter(client.getOutputStream(), true).println(inputstring);
+						}catch(IOException u){
+							u.printStackTrace();
+							System.out.println("Could not relay to client:" +client);
 						}
+					}
+					
+					//if the user exits, remove from list and close thread
+					if(inputstring.endsWith("/exit")){
+						connection_listener.connected_users.remove(clientSocket);
+						return;
 					}
 					
 					//have to flush string
