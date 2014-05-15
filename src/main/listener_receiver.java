@@ -31,8 +31,6 @@ public class listener_receiver implements Runnable{
 			//this prevents null reading, and blocks until such time
 			if(inputstring!=null && inputstring.length()>0){
 				
-				//System.out.println("getting " + inputstring);
-				
 				//check to see if its the server assiging name
 				if(inputstring.startsWith("server-assigned-nick: ")){
 					p2p_user.name=inputstring.substring(22);
@@ -79,16 +77,36 @@ public class listener_receiver implements Runnable{
 				
 				//if someone exits
 				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] \\<(.*)\\> \\: \\/exit")){
-					p2p_user.gui.set_text(inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">")) + " left the chat");
+					String name=inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">"));
+					p2p_user.gui.set_text(name + " left the chat");
+					//remove from connected users
+					p2p_user.gui.removeUser(name);
+				}
+				
+				//if someone connects
+				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] user \\<(.*)\\> connected to chat")){
+					String name=inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">"));
+					p2p_user.gui.set_text(inputstring);
+					//add connected users
+					p2p_user.gui.addUser(name);
+				}
+				
+				//if someone changes their name
+				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] (.*) is now called (.*)")){
+					String oldname=inputstring.substring(inputstring.indexOf("]")+2,inputstring.indexOf(" is"));
+					String newname=inputstring.substring(inputstring.indexOf("called ")+7);
+					p2p_user.gui.set_text(inputstring);
+					//replace connected users name
+					p2p_user.gui.replaceUser(oldname,newname);
 				}
 				
 				else{
-						//System.out.println("not catching " + inputstring);
-					//check to make sure text can be parsed to check against blacklist, then check blacklist
-					//TODO this is just wrong. ONLY TEMPORARY
+					//This works, but feels wrong
+					//check is this text is a user text message (not a user action alert), and then check against blacklist
 					if(inputstring.matches("(.*)<(.*)>(.*)") && !p2p_user.blacklist.contains(inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">")))){
 						p2p_user.gui.set_text(inputstring);
 					}
+					//text only doesnt have <Name> if its an action alert. Allow it
 					else if(!inputstring.matches("(.*)<(.*)>(.*)")){
 						p2p_user.gui.set_text(inputstring);
 					}

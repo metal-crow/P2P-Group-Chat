@@ -30,6 +30,7 @@ public class RSA {
 		}
 		
 		//compute the modular multiplicative inverse. 1/e % totient
+		//TODO this will sometimes return "java.lang.ArithmeticException: BigInteger not invertible."
 		d = e.modInverse(totient);
 	}
 	

@@ -13,7 +13,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
+import javax.swing.text.Document;
 
 import main.p2p_user;
 
@@ -21,9 +23,12 @@ import main.p2p_user;
 public class GUI extends JPanel{
 	private int width;
 	private int height;
+	
 	private JTextPane chat_text = new JTextPane();
-	//TODO f it, I'll fix this layout later
 	private JTextField input = new JTextField(25);
+	private JTextPane connected_users = new JTextPane();
+	
+	//TODO color coding,fix layout
 	
 	public GUI(int height, int width){
 		this.width=width;
@@ -63,7 +68,14 @@ public class GUI extends JPanel{
 		    }
 		});
 		
-		add(chat_text_sp);
+		connected_users.setEditable(false);
+		JScrollPane connected_users_sp = new JScrollPane(connected_users);
+		
+		JPanel chat_and_users= new JPanel();
+		chat_and_users.add(chat_text_sp);
+		chat_and_users.add(connected_users_sp);
+		add(chat_and_users);
+		
 		JPanel user_input = new JPanel();
 		user_input.add(input);
 		user_input.add(send);
@@ -74,9 +86,43 @@ public class GUI extends JPanel{
         return new Dimension(width,height);
     }
 	
-	//TODO this just doesnt work sometimes. It eats text
-	//and sometimes it puts the text at the top of the pane
 	public void set_text(String txt){
-		chat_text.setText(chat_text.getText()+txt+"\n");
+		try {
+		      Document doc = chat_text.getDocument();
+		      doc.insertString(doc.getLength(), txt, null);
+		} catch(BadLocationException exc) {
+		      exc.printStackTrace();
+		      System.out.println("Could not add to chat textbox");
+		}
+	}
+	
+	public void addUser(String user){
+		try {
+		      Document doc = connected_users.getDocument();
+		      doc.insertString(doc.getLength(), user+"\n", null);
+		} catch(BadLocationException exc) {
+		      exc.printStackTrace();
+		      System.out.println("Could not add user to connected user textbox");
+		}
+	}
+	public void removeUser(String user){
+		try {
+		      Document doc = connected_users.getDocument();
+		      doc.remove(doc.toString().indexOf(user), user.length());
+		} catch(BadLocationException exc) {
+		      exc.printStackTrace();
+		      System.out.println("Could not remove user from connected user textbox");
+		}
+	}
+	public void replaceUser(String oldname,String newname){
+		try {
+		      Document doc = connected_users.getDocument();
+		      int location_of_name=doc.toString().indexOf(oldname);
+		      doc.remove(location_of_name, oldname.length());
+		      doc.insertString(location_of_name, newname+"\n", null);
+		} catch(BadLocationException exc) {
+		      exc.printStackTrace();
+		      System.out.println("Could not chaneg users name in connected user textbox");
+		}
 	}
 }

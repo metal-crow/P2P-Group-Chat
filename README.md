@@ -8,10 +8,13 @@ It can communicate with other connected users over LAN.
 Using RSA, it allows people to DM each other securely and privately.
 It allows users to selectively block and unblock other users based on name.
 Has timestamps based on relay time.
+Uses Regex to make use user commands are properly caught (i.e. it won't do a command for "just type in /nick NAME to change your name")
+Stores and displayes the list of connected usernames (only plaintext)
   
 Next steps are (probably in order of implementation)
 	-List of connected users  
 	-GUI (work on, make more like traditional IRC look & feel)  
+	-Proper and graceful exiting and closing  
 	-Allow other connected users to take over as host if host disconnects  
 	-Allow internet connections and have multiple hosts managing their LAN groups able to connect (ideally this will be more like true P2P)  
   
@@ -32,7 +35,7 @@ More details for group chat:
 •	More may be added  
 There are also commands that the socket listener listens for. These are  
 •	server-assigned-nick: (change user’s name)  
-•	/request USERNAME  key (broadcasts the user’s public key)  
+•	/request USERNAME key (broadcasts the user’s public key)  
 •	Public Key for (indicates that another user has broadcast their public key, and adds it to this user’s public key array)  
 •	DM- USERNAME (that someone has send a dm to this user, and it must be decrypted)  
 •	More may be added  
