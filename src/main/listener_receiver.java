@@ -31,7 +31,7 @@ public class listener_receiver implements Runnable{
 			//this prevents null reading, and blocks until such time
 			if(inputstring!=null && inputstring.length()>0){
 				
-				System.out.println("getting " + inputstring);
+				//System.out.println("getting " + inputstring);
 				
 				//check to see if its the server assiging name
 				if(inputstring.startsWith("server-assigned-nick: ")){
@@ -40,7 +40,7 @@ public class listener_receiver implements Runnable{
 				}
 				
 				//if someone wants user's public key, broadcast it
-				else if(inputstring.contains("/request " + p2p_user.name + " key")){
+				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] \\<(.*)\\> \\: \\/request " +p2p_user.name+ " key")){
 					BigInteger[] publickey=p2p_user.Users_RSA.publickey();
 					
 					try{
@@ -49,7 +49,7 @@ public class listener_receiver implements Runnable{
 								"n-"+publickey[0] +
 								"e-"+publickey[1]);
 						
-						p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf(":")) +" requested your public key. It has been broadcast.");
+						p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf("> :")+1) +" requested your public key. It has been broadcast.");
 					}catch(IOException u){
 						u.printStackTrace();
 						p2p_user.gui.set_text("ERROR: unable to broadcast public key");
@@ -57,34 +57,39 @@ public class listener_receiver implements Runnable{
 				}
 				
 				//if someone else is broadcasting their public key, store it
-				else if(inputstring.startsWith("Public Key for ")){
+				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] Public Key for (.*)\\:n-[0-9]+e-[0-9]+")){
 					BigInteger n=new BigInteger(inputstring.substring(inputstring.indexOf("n-")+2, inputstring.indexOf("e-")));
 					BigInteger e=new BigInteger(inputstring.substring(inputstring.indexOf("e-")+2));
 					String name=inputstring.substring(inputstring.indexOf("Public Key for ")+15,inputstring.indexOf(":n-"));
+					String date=inputstring.substring(0,10);
 					
 					//if its not your public key and you dont already have it
 					if(!name.equals(p2p_user.name) && !p2p_user.other_users_public_keys.contains(name)){
 						p2p_user.other_users_public_keys.add(new RSA(n,e,name));
-						p2p_user.gui.set_text("Got "+name+" public key");
+						p2p_user.gui.set_text(date+" Got "+name+" public key");
 					}
 				}
 				
 				//if someone is sending a dm, check if its directed to this user, and decrypt it
-				else if(inputstring.contains("DM-"+p2p_user.name) && !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
+				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] \\<(.*)\\> \\: DM-"+p2p_user.name+" m-[0-9]+") && !p2p_user.blacklist.contains(inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">")))){
 					BigInteger encryptedmss= new BigInteger(inputstring.substring(inputstring.indexOf("m-")+2));
 					p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf("m-")+2)
 										+p2p_user.Users_RSA.Decrypt(encryptedmss));
 				}
 				
 				//if someone exits
-				else if(inputstring.endsWith("/exit")){
-					p2p_user.gui.set_text(inputstring.substring(0,inputstring.indexOf(":")) + " left the chat");
+				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] \\<(.*)\\> \\: \\/exit")){
+					p2p_user.gui.set_text(inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">")) + " left the chat");
 				}
 				
 				else{
-						System.out.println("not catching " + inputstring);
+						//System.out.println("not catching " + inputstring);
 					//check to make sure text can be parsed to check against blacklist, then check blacklist
-					if(inputstring.contains(":") && !p2p_user.blacklist.contains(inputstring.substring(0,inputstring.indexOf(":")))){
+					//TODO this is just wrong. ONLY TEMPORARY
+					if(inputstring.matches("(.*)<(.*)>(.*)") && !p2p_user.blacklist.contains(inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">")))){
+						p2p_user.gui.set_text(inputstring);
+					}
+					else if(!inputstring.matches("(.*)<(.*)>(.*)")){
 						p2p_user.gui.set_text(inputstring);
 					}
 				}

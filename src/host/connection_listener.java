@@ -31,8 +31,6 @@ public class connection_listener implements Runnable{
 				
 				//tell the client their default name
 				new PrintWriter(clientSocket.getOutputStream(), true).println("server-assigned-nick: ANON"+connected_users.size());
-				
-				p2p_user.gui.set_text("User ANON"+connected_users.size() + " connected to chat");
 		        
 			} catch (IOException e) {
 				e.printStackTrace();

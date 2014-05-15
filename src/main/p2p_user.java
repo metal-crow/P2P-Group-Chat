@@ -99,7 +99,7 @@ public class p2p_user {
 			connected=false;
 			connecting=false;
 			try{
-				new PrintWriter(clientsocket.getOutputStream(), true).println(name+":"+users_input);
+				new PrintWriter(clientsocket.getOutputStream(), true).println("<"+name+">"+" : "+users_input);
 			}catch(IOException u){
 				gui.set_text("ERROR: unable to alert others to exit");
 			}
@@ -136,7 +136,7 @@ public class p2p_user {
 		}
 		
 		//for user to send a dm to a user using their public key (others can only see encrypted)
-		else if(users_input.toLowerCase().startsWith("/dm")){
+		else if(users_input.toLowerCase().matches("\\/dm (.*) m\\:(.*)")){
 			//since a dm is supposed to be private, try to be forgiving if user fudges command
 			String dm_message=users_input.substring(users_input.toLowerCase().indexOf("m:")+2);
 			String username=users_input.substring(4,users_input.toLowerCase().indexOf(" m:"));
@@ -146,7 +146,7 @@ public class p2p_user {
 				if(user.name().equals(username)){
 					founduser=true;
 					try{
-						new PrintWriter(clientsocket.getOutputStream(), true).println(name+":" +
+						new PrintWriter(clientsocket.getOutputStream(), true).println("<"+name+">"+" : " +
 								"DM-"+username+
 								" m-"+user.Encrypt(dm_message));
 						gui.set_text("Sucessfully send dm message:" +dm_message+" to "+username);
@@ -185,7 +185,7 @@ public class p2p_user {
 		else{
 			//write to the socket's output stream and the server picks it up
 			try{
-				new PrintWriter(clientsocket.getOutputStream(), true).println(name+":"+users_input);
+				new PrintWriter(clientsocket.getOutputStream(), true).println("<"+name+">"+" : "+users_input);
 			}catch(IOException u){
 				gui.set_text("ERROR: Unable to send.");
 			}

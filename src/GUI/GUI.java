@@ -74,7 +74,8 @@ public class GUI extends JPanel{
         return new Dimension(width,height);
     }
 	
-	//TODO the user sending dms timetimes will recive the relayed encrypted dm and have it added to top of window, and sometimes it will not be added at all
+	//TODO this just doesnt work sometimes. It eats text
+	//and sometimes it puts the text at the top of the pane
 	public void set_text(String txt){
 		chat_text.setText(chat_text.getText()+txt+"\n");
 	}
