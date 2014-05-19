@@ -72,8 +72,10 @@ public class GUI extends JPanel{
 		JScrollPane connected_users_sp = new JScrollPane(connected_users);
 		
 		JPanel chat_and_users= new JPanel();
+		chat_text_sp.setPreferredSize(new Dimension(width-85,height-50));
 		chat_and_users.add(chat_text_sp);
 		chat_and_users.add(connected_users_sp);
+		connected_users_sp.setPreferredSize(new Dimension(75,height-50));
 		add(chat_and_users);
 		
 		JPanel user_input = new JPanel();
@@ -89,7 +91,7 @@ public class GUI extends JPanel{
 	public void set_text(String txt){
 		try {
 		      Document doc = chat_text.getDocument();
-		      doc.insertString(doc.getLength(), txt, null);
+		      doc.insertString(doc.getLength(), txt+"\n", null);
 		} catch(BadLocationException exc) {
 		      exc.printStackTrace();
 		      System.out.println("Could not add to chat textbox");
@@ -117,12 +119,12 @@ public class GUI extends JPanel{
 	public void replaceUser(String oldname,String newname){
 		try {
 		      Document doc = connected_users.getDocument();
-		      int location_of_name=doc.toString().indexOf(oldname);
+		      int location_of_name=doc.getText(0, doc.getLength()).indexOf(oldname);
 		      doc.remove(location_of_name, oldname.length());
-		      doc.insertString(location_of_name, newname+"\n", null);
+		      doc.insertString(location_of_name, newname, null);
 		} catch(BadLocationException exc) {
 		      exc.printStackTrace();
-		      System.out.println("Could not chaneg users name in connected user textbox");
+		      System.out.println("Could not change users name in connected user textbox");
 		}
 	}
 }

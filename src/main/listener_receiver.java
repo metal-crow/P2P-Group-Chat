@@ -84,10 +84,17 @@ public class listener_receiver implements Runnable{
 				}
 				
 				//if someone connects
-				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] user \\<(.*)\\> connected to chat")){
+				else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] User \\<(.*)\\> connected to chat")){
 					String name=inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">"));
 					p2p_user.gui.set_text(inputstring);
-					//add connected users
+					//add connected user
+					p2p_user.gui.addUser(name);
+				}
+				
+				//if user connects and receives the list of people already connected
+				else if(inputstring.matches("User \\<(.*)\\> is connected to chat")){
+					String name=inputstring.substring(inputstring.indexOf("<")+1,inputstring.indexOf(">"));
+					//add connected user
 					p2p_user.gui.addUser(name);
 				}
 				

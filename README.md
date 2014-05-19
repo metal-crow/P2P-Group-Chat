@@ -9,17 +9,16 @@ Using RSA, it allows people to DM each other securely and privately.
 It allows users to selectively block and unblock other users based on name.
 Has timestamps based on relay time.
 Uses Regex to make use user commands are properly caught (i.e. it won't do a command for "just type in /nick NAME to change your name")
-Stores and displayes the list of connected usernames (only plaintext)
+Stores and displays the list of connected usernames (only plaintext)
   
 Next steps are (probably in order of implementation)
-	-List of connected users  
 	-GUI (work on, make more like traditional IRC look & feel)  
 	-Proper and graceful exiting and closing  
 	-Allow other connected users to take over as host if host disconnects  
 	-Allow internet connections and have multiple hosts managing their LAN groups able to connect (ideally this will be more like true P2P)  
   
   
-I will be coding a group chat that will allow users connected over LAN to communicate, as well as a Direct Message system that uses RSA encryption to allow users to send messages to each other that can only be read by the recipient.  
+I am coding a group chat that will allow users connected over LAN to communicate, as well as a Direct Message system that uses RSA encryption to allow users to send messages to each other that can only be read by the recipient.  
   
 The first stage, the group chat, will be implemented by having the first user to run the program create a server, which runs on a separate thread and listens for sockets to connect to that address. The first user, besides running this thread, is treated in the same way as every other user. Each user creates a socket, connects to the server, and creates a receiver thread that listens for any input on that sockets input stream. The user can write text to their sockets output stream, which includes their name, and the server has a thread listening to each connected socket attached to it. When it receives the text from that sockets output stream, it relays this text to all the other sockets (except the socket it received it from), by writing it to their input stream. Each socket then reads their output stream in the listener thread, and prints it out.  
   

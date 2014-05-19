@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class connection_listener implements Runnable{
 	
 	private ServerSocket server;
-	public static final ArrayList<Socket> connected_users=new ArrayList<Socket>(1);
+	public static final ArrayList<User_Class> connected_users=new ArrayList<User_Class>(1);
 	
 	public connection_listener(ServerSocket server) {
 		this.server=server;
@@ -23,15 +23,22 @@ public class connection_listener implements Runnable{
 				Socket clientSocket = server.accept();
 				
 				//put this new accepted client in arraylist, which is read by each reciver so it can send each user's text to all clients
-				connected_users.add(clientSocket);
+				connected_users.add(new User_Class(clientSocket,"ANON"+(connected_users.size()+1)));
 				
 				//server must listen to each connected socket and relay their text
-				Thread reciver_thread = new Thread(new relay_receiver(clientSocket));
+				Thread reciver_thread = new Thread(new relay_receiver(connected_users.size()-1));
 				reciver_thread.start();
 				
+				PrintWriter clientout=new PrintWriter(clientSocket.getOutputStream(), true);
+				
 				//tell the client their default name
-				new PrintWriter(clientSocket.getOutputStream(), true).println("server-assigned-nick: ANON"+connected_users.size());
-		        
+				clientout.println("server-assigned-nick: ANON"+connected_users.size());
+				
+		        //tell client all currently connected users (excluding self)
+				for(int i=0;i<connected_users.size()-1;i++){
+					clientout.println("User <"+connected_users.get(i).getName()+ "> is connected to chat");
+				}
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 				p2p_user.gui.set_text("ERROR: Could not accept new user");

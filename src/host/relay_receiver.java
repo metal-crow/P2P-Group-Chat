@@ -3,7 +3,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -11,24 +10,24 @@ import java.util.Date;
 //it relays a sockets output to the other sockets, and listens for if it exits
 public class relay_receiver implements Runnable{
 
-	private Socket clientSocket;
+	private int index;
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 	
 	//make thread for new connected user
-	public relay_receiver (Socket clientSocket) {
-		this.clientSocket=clientSocket;
+	public relay_receiver (int index) {
+		this.index=index;
 	}
 	
 	public void run() {
 		try{
 			BufferedReader get =
 			        new BufferedReader(
-			            new InputStreamReader(clientSocket.getInputStream()));
+			            new InputStreamReader(connection_listener.connected_users.get(index).getSocket().getInputStream()));
 			
 			//first thing, tell everyone this user connected
-			for(Socket client:connection_listener.connected_users){
+			for(User_Class client:connection_listener.connected_users){
 				try{
-					new PrintWriter(client.getOutputStream(), true).println("["+sdf.format(new Date(System.currentTimeMillis()))+"] " + "User <ANON"+connection_listener.connected_users.size() + "> connected to chat");
+					new PrintWriter(client.getSocket().getOutputStream(), true).println("["+sdf.format(new Date(System.currentTimeMillis()))+"] " + "User <ANON"+connection_listener.connected_users.size() + "> connected to chat");
 				}catch(IOException u){
 					u.printStackTrace();
 					System.out.println("Could not inform " +client + " of new connection");
@@ -45,9 +44,9 @@ public class relay_receiver implements Runnable{
 					inputstring="["+sdf.format(new Date(System.currentTimeMillis()))+"] "+ inputstring;
 
 					//relay this text to all connected users
-					for(Socket client:connection_listener.connected_users){
+					for(User_Class client:connection_listener.connected_users){
 						try{
-							new PrintWriter(client.getOutputStream(), true).println(inputstring);
+							new PrintWriter(client.getSocket().getOutputStream(), true).println(inputstring);
 						}catch(IOException u){
 							u.printStackTrace();
 							System.out.println("Could not relay to client:" +client);
@@ -55,9 +54,15 @@ public class relay_receiver implements Runnable{
 					}
 					
 					//if the user exits, remove from list and close thread
-					if(inputstring.endsWith("/exit")){
-						connection_listener.connected_users.remove(clientSocket);
+					if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] \\<(.*)\\> \\: \\/exit")){
+						connection_listener.connected_users.remove(index);
 						return;
+					}
+					
+					//if user changes name, store it
+					else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] (.*) is now called (.*)")){
+						String newname=inputstring.substring(inputstring.indexOf("called ")+7);
+						connection_listener.connected_users.get(index).setName(newname);
 					}
 					
 					//have to flush string
