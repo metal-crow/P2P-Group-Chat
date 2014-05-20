@@ -1,20 +1,24 @@
-P2P-Group-Chat
-==============
-
 Rudimentary P2P (only technically) group chat I've made.
-
+==============
+  
+INFO:  
+---------------------  
+  
 Currently in beta.  
 It can communicate with other connected users over LAN.  
-Using RSA, it allows people to DM each other securely and privately.
-It allows users to selectively block and unblock other users based on name.
-Has timestamps based on relay time.
-Uses Regex to make use user commands are properly caught (i.e. it won't do a command for "just type in /nick NAME to change your name")
-Stores and displays the list of connected usernames (only plaintext)
+Using RSA, it allows people to DM each other securely and privately.  
+It allows users to selectively block and unblock other users based on name.  
+Has timestamps based on relay time.  
+Uses Regex to make use user commands are properly caught (i.e. it won't do a command for "just type in /nick NAME to change your name")  
+Stores and displays the list of connected usernames (only plaintext)  
 Allows other connected users to take over as host if host disconnects  
   
-Next steps are (probably in order of implementation)
+Next steps are (probably in order of implementation)  
 	-Allow internet connections and have multiple hosts managing their LAN groups able to connect (ideally this will be more like true P2P)  
   
+  
+DOCUMENTATION:  
+---------------------  
   
 I am coding a group chat that will allow users connected over LAN to communicate, as well as a Direct Message system that uses RSA encryption to allow users to send messages to each other that can only be read by the recipient.  
   
