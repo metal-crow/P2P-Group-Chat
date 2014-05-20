@@ -18,14 +18,23 @@ public class listener_receiver implements Runnable{
 			System.out.println("Could not open input stream");
 		}
 		
-		//TODO this gets a socketclosed error when user exits
 		while(p2p_user.connected){
 			String inputstring = null;
 			try {
 				inputstring = get.readLine();
 			} catch (IOException e1) {
-				e1.printStackTrace();
-				System.out.println("Could not read input stream");
+				//user has properly closed the socket, exit thread
+				if(!p2p_user.connected){
+					return;
+				}
+				//the server side has been improperly closed
+				else{
+					p2p_user.gui.set_text("Server has been destroyed. Taking over as host...");
+					//reset main loop to beginning (try to create server)
+					p2p_user.connected=false;
+					//close this thread (main will reopen it)
+					return;
+				}
 			}
 			
 			//this prevents null reading, and blocks until such time

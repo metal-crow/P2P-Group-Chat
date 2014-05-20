@@ -110,7 +110,8 @@ public class GUI extends JPanel{
 	public void removeUser(String user){
 		try {
 		      Document doc = connected_users.getDocument();
-		      doc.remove(doc.toString().indexOf(user), user.length());
+		      int location_of_name=doc.getText(0, doc.getLength()).indexOf(user);
+		      doc.remove(location_of_name, user.length()+1);
 		} catch(BadLocationException exc) {
 		      exc.printStackTrace();
 		      System.out.println("Could not remove user from connected user textbox");
@@ -126,5 +127,13 @@ public class GUI extends JPanel{
 		      exc.printStackTrace();
 		      System.out.println("Could not change users name in connected user textbox");
 		}
+	}
+	//wipe list of currently connected users (used if a user takes over as host, we dont want old list sticking around)
+	public void resetConnectedUsers(){
+		connected_users.setText("");
+	}
+	//this seems wrong
+	public void closeGUI(){
+		System.exit(0);
 	}
 }

@@ -1,5 +1,6 @@
 package main;
 import host.connection_listener;
+import GUI.GUI;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -7,11 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 import javax.swing.JFrame;
-
-import GUI.GUI;
-
 
 public class p2p_user {
 
@@ -22,7 +19,7 @@ public class p2p_user {
 	public static String name="undefined";
 	
 	private static boolean connecting=true;
-	public static boolean connected=true;
+	public static boolean connected=false;
 	
 	public static RSA Users_RSA= new RSA(1024);
 	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
@@ -43,51 +40,40 @@ public class p2p_user {
         f.setVisible(true);
 		
 		while(connecting){
-			try {
-				gui.set_text("setting up server...");
-				
-				//if hosting the server, make a connection listener
+			if(!connected){
 				try {
-					//start server
-					ServerSocket server=new ServerSocket(PORT);
-					//start the listener for connecting clients
-			        Thread connection_listener_thread = new Thread(new connection_listener(server));
-			        connection_listener_thread.start();
+					gui.resetConnectedUsers();
+					
+					gui.set_text("setting up server...");
+					
+					//if hosting the server, make a connection listener
+					try {
+						//start server
+						ServerSocket server=new ServerSocket(PORT);
+						//start the listener for connecting clients
+				        Thread connection_listener_thread = new Thread(new connection_listener(server));
+				        connection_listener_thread.start();
+					} catch (IOException e) {
+						gui.set_text("Server already exists. Connecting...");
+					}
+			
+					clientsocket = new Socket(ADDRESS, PORT);
+					
+					connected=true;
+			        
+					//make sure to listen to your own socket.
+					Thread reciver_thread = new Thread(new listener_receiver());
+					reciver_thread.start();
+					
+					gui.set_text("You are connected! Type /help for a list of commands.");
+				
 				} catch (IOException e) {
-					gui.set_text("Server already exists. Connecting...");
-				}
-		
-				clientsocket = new Socket(ADDRESS, PORT);
-		        
-				//make sure to listen to your own socket.
-				Thread reciver_thread = new Thread(new listener_receiver());
-				reciver_thread.start();
-				
-				gui.set_text("You are connected! Type /help for a list of commands.");
-					
-				while(connected){
-					//TODO if the host server disconnects, recreate it
-					
-					/*if(!clientsocket.isConnected()){
-						System.out.println("Recreating server");
-						try{
-							//start server
-							ServerSocket server=new ServerSocket(PORT);
-							//start the listener for connecting clients
-					        Thread connection_listener_thread = new Thread(new connection_listener(server));
-					        connection_listener_thread.start();
-						}catch(IOException e){
-							e.printStackTrace();
-						}
-					}*/
-				}
-				
-			} catch (IOException e) {
-				gui.set_text("Could not connect. Do you want to retry? Y/N");
-				Scanner in = new Scanner(System.in);
-				if(in.next().toLowerCase().equals("n")){
-					connecting=false;
-					in.close();
+					gui.set_text("Could not connect. Do you want to retry? Y/N");
+					Scanner in = new Scanner(System.in);
+					if(in.next().toLowerCase().equals("n")){
+						connecting=false;
+						in.close();
+					}
 				}
 			}
 		}
@@ -109,8 +95,8 @@ public class p2p_user {
 				e.printStackTrace();
 				gui.set_text("ERROR: Could not exit");
 			}
+			gui.closeGUI();
 			f.dispose();
-			
 		}
 		
 		//see commands (others can't see)
