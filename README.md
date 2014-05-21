@@ -5,7 +5,7 @@ INFO:
 ---------------------  
   
 Currently in beta.  
-<strike>It can communicate with other connected users over LAN.</strike>  
+It can communicate with other connected users over LAN.
 Using RSA, it allows people to DM each other securely and privately.  
 It allows users to selectively block and unblock other users based on name.  
 Has timestamps based on relay time.  
@@ -16,7 +16,6 @@ Allows other connected users to take over as host if host disconnects
 Next steps are (probably in order of implementation)  
 	-Learn a TON more about network communication  
 	-Fix RSA generation bug  
-	-Allow user to input program commands (connection failure) over gui  
 	-More GUI work (colors and color coding, make like traditional IRC look and feel)  
 	-Allow internet connections and have multiple hosts managing their LAN groups able to connect (ideally this will be more like true P2P)  
   
