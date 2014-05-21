@@ -44,6 +44,18 @@ public class relay_receiver implements Runnable{
 					if(inputstring.matches("Local ip=[0-9]+")){
 						String ip=inputstring.substring(inputstring.indexOf("="));
 						connection_listener.connected_users.get(index).setIP(ip);
+						
+						//if this user is the chosen emergency host, now that we know their ip, broadcast it
+						if(connection_listener.backuphost==index){
+							for(User_Class client:connection_listener.connected_users){
+								try{
+									new PrintWriter(client.getSocket().getOutputStream(), true).println(connection_listener.connected_users.get(connection_listener.backuphost).getIP() + " is the emergency host");
+								}catch(IOException u){
+									u.printStackTrace();
+									System.out.println("Could not inform " +client + " of backup host");
+								}
+							}
+						}
 					}
 					
 					else{

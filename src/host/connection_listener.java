@@ -12,6 +12,7 @@ public class connection_listener implements Runnable{
 	
 	private ServerSocket server;
 	public static final ArrayList<User_Class> connected_users=new ArrayList<User_Class>(1);
+	public static int backuphost;
 	
 	public connection_listener(ServerSocket server) {
 		this.server=server;
@@ -43,15 +44,7 @@ public class connection_listener implements Runnable{
 				//tell clients who has been randomly picked to be the next host
 				//everytime a new client connects, a new backup host is randomly picked
 				if(connected_users.size()>1){
-					int backuphost=new Random().nextInt(connected_users.size())+1;
-					for(User_Class client:connected_users){
-						try{
-							new PrintWriter(client.getSocket().getOutputStream(), true).println(connected_users.get(backuphost).getIP() + " is the emergency host");
-						}catch(IOException u){
-							u.printStackTrace();
-							System.out.println("Could not inform " +client + " of backup host");
-						}
-					}
+					backuphost=new Random().nextInt(connected_users.size())+1;
 				}
 				
 			} catch (IOException e) {
