@@ -16,9 +16,10 @@ public class p2p_user {
 
 	private static final int PORT = 8888;
 	private static final String SUBNET = "10.1.32.";//this is the TEMP local subnet address
-	private static String HOST = "";
+	public static String HOST = "";
+	public static String BACKUP_HOST="";
 	
-	private static String hosting="";
+	public static String hosting="";
 	private static Object LOCK = new Object();//lock to wait on user's response
 	
 	public static Socket clientsocket;
@@ -48,18 +49,21 @@ public class p2p_user {
 		while(connecting){
 			if(!connected){
 				gui.resetConnectedUsers();
-
-				gui.set_text("Are you connecting to a server or hosting new one? (C:connecting,H:hosting");
 				
-				//block to wait for user's response
-				synchronized (LOCK) {
-				    while (hosting.equals("")) {
-				        try { LOCK.wait(); }
-				        catch (InterruptedException e) {
-				            // treat interrupt as exit request
-				            break;
-				        }
-				    }
+				//starting up for the first time, dont know host
+				if(HOST.equals("")){
+					gui.set_text("Are you connecting to a server or hosting new one? (C:connecting,H:hosting");
+					
+					//block to wait for user's response
+					synchronized (LOCK) {
+					    while (hosting.equals("")) {
+					        try { LOCK.wait(); }
+					        catch (InterruptedException e) {
+					            // treat interrupt as exit request
+					            break;
+					        }
+					    }
+					}
 				}
 				
 				if(hosting.equals("h")){
@@ -71,11 +75,11 @@ public class p2p_user {
 					    Thread connection_listener_thread = new Thread(new connection_listener(server));
 					    connection_listener_thread.start();
 					} catch (IOException e) {
-						System.out.println("error creating serevr");
+						System.out.println("error creating server");
 					}
 					
 					try {
-						System.out.println(InetAddress.getLocalHost().getHostAddress()+" is your ip");
+						gui.set_text(InetAddress.getLocalHost().getHostAddress()+" is your ip");
 						clientsocket = new Socket(InetAddress.getLocalHost().getHostAddress(), PORT);
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -84,17 +88,20 @@ public class p2p_user {
 				}
 				
 				else if(hosting.equals("c")){
-					gui.set_text("Please enter the last digits of the host's local ip (e.x. for ip 10.1.32.81 you input 81)");
-					
-					//block to wait for user's response
-					synchronized (LOCK) {
-					    while (HOST.equals("")) {
-					        try { LOCK.wait(); }
-					        catch (InterruptedException e) {
-					            // treat interrupt as exit request
-					            break;
-					        }
-					    }
+					//starting up for the first time, dont know host. This is bypassed for reconnect
+					if(HOST.equals("")){
+						gui.set_text("Please enter the last digits of the host's local ip (e.x. for ip 10.1.32.81 you input 81)");
+						
+						//block to wait for user's response
+						synchronized (LOCK) {
+						    while (HOST.equals("")) {
+						        try { LOCK.wait(); }
+						        catch (InterruptedException e) {
+						            // treat interrupt as exit request
+						            break;
+						        }
+						    }
+						}
 					}
 					
 					try {
@@ -110,6 +117,14 @@ public class p2p_user {
 				//make sure to listen to your own socket.
 				Thread reciver_thread = new Thread(new listener_receiver());
 				reciver_thread.start();
+				
+				//tell server your local ip
+				try {
+					String ip=InetAddress.getLocalHost().getHostAddress();
+					new PrintWriter(clientsocket.getOutputStream(), true).println("Local ip="+ip.substring(ip.lastIndexOf(".")+1));
+				} catch (IOException e) {
+					gui.set_text("Unable to inform host of ip. You cannot become an emergency host.");
+				}
 				
 				gui.set_text("You are connected! Type /help for a list of commands.");
 			}

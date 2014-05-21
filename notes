@@ -26,3 +26,15 @@ If hsot fails, the chosen new host creates the server and everyone already knwon
 true p2p
 what are datagrams? http://docs.oracle.com/javase/tutorial/networking/datagrams/clientServer.html
 look up how to p2p
+
+
+BUGS:
+
+ANON2 left the chat
+[15:44:05] User <ANON2> connected to chat
+
+on /exit,
+error creating server
+10.1.32.81 is your ip
+
+null is the emergency host

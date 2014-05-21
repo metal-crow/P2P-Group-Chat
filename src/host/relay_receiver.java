@@ -40,29 +40,37 @@ public class relay_receiver implements Runnable{
 				//this prevents null reading, and blocks until such time
 				if(inputstring!=null && inputstring.length()>0){
 					
-					//add timestamps
-					inputstring="["+sdf.format(new Date(System.currentTimeMillis()))+"] "+ inputstring;
-
-					//relay this text to all connected users
-					for(User_Class client:connection_listener.connected_users){
-						try{
-							new PrintWriter(client.getSocket().getOutputStream(), true).println(inputstring);
-						}catch(IOException u){
-							u.printStackTrace();
-							System.out.println("Could not relay to client:" +client);
+					//user is inform us of their ip. Add to file, and dont relay to other users
+					if(inputstring.matches("Local ip=[0-9]+")){
+						String ip=inputstring.substring(inputstring.indexOf("="));
+						connection_listener.connected_users.get(index).setIP(ip);
+					}
+					
+					else{
+						//add timestamps
+						inputstring="["+sdf.format(new Date(System.currentTimeMillis()))+"] "+ inputstring;
+	
+						//relay this text to all connected users
+						for(User_Class client:connection_listener.connected_users){
+							try{
+								new PrintWriter(client.getSocket().getOutputStream(), true).println(inputstring);
+							}catch(IOException u){
+								u.printStackTrace();
+								System.out.println("Could not relay to client:" +client);
+							}
 						}
-					}
-					
-					//if the user exits, remove from list and close thread
-					if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] \\<(.*)\\> \\: \\/exit")){
-						connection_listener.connected_users.remove(index);
-						return;
-					}
-					
-					//if user changes name, store it
-					else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] (.*) is now called (.*)")){
-						String newname=inputstring.substring(inputstring.indexOf("called ")+7);
-						connection_listener.connected_users.get(index).setName(newname);
+						
+						//if the user exits, remove from list and close thread
+						if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] \\<(.*)\\> \\: \\/exit")){
+							connection_listener.connected_users.remove(index);
+							return;
+						}
+						
+						//if user changes name, store it
+						else if(inputstring.matches("\\[[0-9]{2}\\:[0-9]{2}\\:[0-9]{2}\\] (.*) is now called (.*)")){
+							String newname=inputstring.substring(inputstring.indexOf("called ")+7);
+							connection_listener.connected_users.get(index).setName(newname);
+						}
 					}
 					
 					//have to flush string

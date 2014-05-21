@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Random;
 
 //this is the thread for the server that will listen for any user connections, and create a listener thread for each
 public class connection_listener implements Runnable{
@@ -37,6 +38,20 @@ public class connection_listener implements Runnable{
 		        //tell client all currently connected users (excluding self)
 				for(int i=0;i<connected_users.size()-1;i++){
 					clientout.println("User <"+connected_users.get(i).getName()+ "> is connected to chat");
+				}
+				
+				//tell clients who has been randomly picked to be the next host
+				//everytime a new client connects, a new backup host is randomly picked
+				if(connected_users.size()>1){
+					int backuphost=new Random().nextInt(connected_users.size())+1;
+					for(User_Class client:connected_users){
+						try{
+							new PrintWriter(client.getSocket().getOutputStream(), true).println(connected_users.get(backuphost).getIP() + " is the emergency host");
+						}catch(IOException u){
+							u.printStackTrace();
+							System.out.println("Could not inform " +client + " of backup host");
+						}
+					}
 				}
 				
 			} catch (IOException e) {
