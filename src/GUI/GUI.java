@@ -54,8 +54,11 @@ public class GUI extends JPanel{
 		JButton send = new JButton("Send");
 		send.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
-            	p2p_user.handle_GUI_input(input.getText());
-            	input.setText("");
+            	String user_input=input.getText();
+            	if(user_input!=null && user_input.length()>0){
+		    		p2p_user.handle_GUI_input(input.getText());
+		    		input.setText("");
+		    	}
             }
 		});
 		
@@ -63,8 +66,11 @@ public class GUI extends JPanel{
 		input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0),"send");
 		input.getActionMap().put("send",new AbstractAction() {
 		    public void actionPerformed(ActionEvent e) {
-		        p2p_user.handle_GUI_input(input.getText());
-            	input.setText("");
+		    	String user_input=input.getText();
+		    	if(user_input!=null && user_input.length()>0){
+		    		p2p_user.handle_GUI_input(input.getText());
+		    		input.setText("");
+		    	}
 		    }
 		});
 		

@@ -1,0 +1,28 @@
+
+the problem is if i run this main file again i already have a server holding that port spot.
+  if i have the next running user detect that there's a server, and connect to that server, the program will work,
+  but it wont be a DECENTRALIZED p2p chat.
+  TODO I can make it so that if the host user disconnects a different user is chosen to recreate the server and host.
+  TODO have graceful closes on everything
+  I think that a true decentralized p2p chat required a not-server based approach, which im not sure default java offers
+
+method 1
+i could have it so that the connected client sends the text to the server, which then relays it to all connected
+clients, but that isnt really p2p
+
+method 2
+i think each client HAs to run a server, and everyone has to connect to each new clients server for this to work
+
+if a group of peole are on lan, this group has to use method 1, and this group is a group.
+Every new person or group on a different ip uses method 1, and the groups connect via method 2
+i dont think multiple poeple on lan can have servers
+
+
+
+first creation, user has to input ip address of where they want to connect.
+while connected, someone is chose to take over as host if host fails. Thair ip is boradast to everyone.
+If hsot fails, the chosen new host creates the server and everyone already knwon their ip to connect to.
+
+true p2p
+what are datagrams? http://docs.oracle.com/javase/tutorial/networking/datagrams/clientServer.html
+look up how to p2p
