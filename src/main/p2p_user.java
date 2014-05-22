@@ -27,6 +27,7 @@ public class p2p_user {
 	
 	private static boolean connecting=true;
 	public static boolean connected=false;
+	private static boolean wanttoconnect=true;
 	
 	public static RSA Users_RSA= new RSA(1024);
 	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
@@ -47,7 +48,7 @@ public class p2p_user {
         f.setVisible(true);
 		
 		while(connecting){
-			if(!connected){
+			if(!connected && wanttoconnect){
 				gui.resetConnectedUsers();
 				
 				//starting up for the first time, dont know host
@@ -85,6 +86,7 @@ public class p2p_user {
 						e.printStackTrace();
 						System.out.println("error connecting to server you host");
 					}
+					connected=true;
 				}
 				
 				else if(hosting.equals("c")){
@@ -106,33 +108,33 @@ public class p2p_user {
 					
 					try {
 						clientsocket = new Socket(SUBNET+HOST, PORT);
+						connected=true;
 					} catch (IOException e) {
-						e.printStackTrace();
-						System.out.println("error connecting to server");
+						gui.set_text("error connecting to server");
 					}
 				}
 				
-				connected=true;
-				
-				//make sure to listen to your own socket.
-				Thread reciver_thread = new Thread(new listener_receiver());
-				reciver_thread.start();
-				
-				//tell server your local ip
-				try {
-					String ip=InetAddress.getLocalHost().getHostAddress();
-					new PrintWriter(clientsocket.getOutputStream(), true).println("Local ip="+ip.substring(ip.lastIndexOf(".")+1));
-				} catch (IOException e) {
-					gui.set_text("Unable to inform host of ip. You cannot become an emergency host.");
+				if(connected){
+					//make sure to listen to your own socket.
+					Thread reciver_thread = new Thread(new listener_receiver());
+					reciver_thread.start();
+					
+					//tell server your local ip
+					try {
+						String ip=InetAddress.getLocalHost().getHostAddress();
+						new PrintWriter(clientsocket.getOutputStream(), true).println("Local ip="+ip.substring(ip.lastIndexOf(".")+1));
+					} catch (IOException e) {
+						gui.set_text("Unable to inform host of ip. You cannot become an emergency host.");
+					}
+					
+					gui.set_text("You are connected! Type /help for a list of commands.");
 				}
-				
-				gui.set_text("You are connected! Type /help for a list of commands.");
 			}
 		}
 	}
 	
 	public static void handle_GUI_input(String users_input){
-		//non chat comamnds, program managment user side
+		//non chat commands, program managment user side
 		if(!connected){
 			if(users_input.toLowerCase().equals("h")){
 				hosting="h";
@@ -155,6 +157,7 @@ public class p2p_user {
 			if(users_input.equals("/exit")){
 				connected=false;
 				connecting=false;
+				wanttoconnect=false;
 				try{
 					new PrintWriter(clientsocket.getOutputStream(), true).println("<"+name+">"+" : "+users_input);
 				}catch(IOException u){

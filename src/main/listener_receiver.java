@@ -34,6 +34,7 @@ public class listener_receiver implements Runnable{
 					p2p_user.gui.set_text("Server has been destroyed.");
 					//reset main loop to beginning (try to create server)
 					p2p_user.connected=false;
+					
 					//new host is the emergency host
 					if(!p2p_user.BACKUP_HOST.equals("")){
 						String thisip="";
@@ -55,7 +56,9 @@ public class listener_receiver implements Runnable{
 						}
 						
 						p2p_user.HOST=p2p_user.BACKUP_HOST;
+						p2p_user.BACKUP_HOST="";
 					}
+					
 					//emergency catch if no one is assigned to be emergency host, this user hosts
 					else{
 						p2p_user.hosting="h";
@@ -75,8 +78,8 @@ public class listener_receiver implements Runnable{
 					p2p_user.gui.set_text("you are called "+p2p_user.name);
 				}
 				
-				else if(inputstring.matches("[0-9]+ is the backup host")){
-					p2p_user.BACKUP_HOST=inputstring.substring(0,inputstring.indexOf(" is the backup host"));
+				else if(inputstring.matches("[0-9]+ is the emergency host")){
+					p2p_user.BACKUP_HOST=inputstring.substring(0,inputstring.indexOf(" is the emergency host"));
 				}
 				
 				//if someone wants user's public key, broadcast it

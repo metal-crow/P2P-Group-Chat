@@ -12,7 +12,7 @@ public class connection_listener implements Runnable{
 	
 	private ServerSocket server;
 	public static final ArrayList<User_Class> connected_users=new ArrayList<User_Class>(1);
-	public static int backuphost;
+	public static int backuphost=-1;
 	
 	public connection_listener(ServerSocket server) {
 		this.server=server;
@@ -25,10 +25,11 @@ public class connection_listener implements Runnable{
 				Socket clientSocket = server.accept();
 				
 				//put this new accepted client in arraylist, which is read by each reciver so it can send each user's text to all clients
-				connected_users.add(new User_Class(clientSocket,"ANON"+(connected_users.size()+1)));
+				User_Class user = new User_Class(clientSocket,"ANON"+(connected_users.size()+1));
+				connected_users.add(user);
 				
 				//server must listen to each connected socket and relay their text
-				Thread reciver_thread = new Thread(new relay_receiver(connected_users.size()-1));
+				Thread reciver_thread = new Thread(new relay_receiver(user));
 				reciver_thread.start();
 				
 				PrintWriter clientout=new PrintWriter(clientSocket.getOutputStream(), true);
@@ -43,15 +44,31 @@ public class connection_listener implements Runnable{
 				
 				//tell clients who has been randomly picked to be the next host
 				//everytime a new client connects, a new backup host is randomly picked
-				if(connected_users.size()>1){
-					backuphost=new Random().nextInt(connected_users.size())+1;
-				}
+				generateBackupHost();
 				
 			} catch (IOException e) {
 				e.printStackTrace();
 				p2p_user.gui.set_text("ERROR: Could not accept new user");
 			}
 		}	
+	}
+	
+	public static void generateBackupHost(){
+		if(connected_users.size()>1){
+			backuphost=new Random().nextInt((connected_users.size() - 1) + 1);
+			
+			//if the chosen user isn't the one who just connected, we have their ip and can broadcast it
+			if(backuphost<(connected_users.size()-1)){
+				for(User_Class client:connected_users){
+					try{
+						new PrintWriter(client.getSocket().getOutputStream(), true).println(connected_users.get(backuphost).getIP() + " is the emergency host");
+					}catch(IOException u){
+						u.printStackTrace();
+						System.out.println("Could not inform " +client + " of backup host");
+					}
+				}
+			}
+		}
 	}
 
 }
