@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 //this listener thread listens to this socket's input stream
 //print any text it receives, as well as handling commands
@@ -34,10 +36,25 @@ public class listener_receiver implements Runnable{
 					p2p_user.connected=false;
 					//new host is the emergency host
 					if(!p2p_user.BACKUP_HOST.equals("")){
-						//connect, dont host
-						p2p_user.hosting="c";
+						String thisip="";
+						try {
+							thisip=InetAddress.getLocalHost().getHostAddress();
+						} catch (UnknownHostException e) {
+							p2p_user.gui.set_text("Unable to verify you are the emergency host.");
+						}
+						//if you are the emergency host
+						if((p2p_user.SUBNET+p2p_user.BACKUP_HOST).equals(thisip)){
+							p2p_user.hosting="h";
+							p2p_user.gui.set_text("Recreating server.");
+						}
+						
+						else{
+							//connect, dont host
+							p2p_user.hosting="c";
+							p2p_user.gui.set_text("Connecting to backup server.");
+						}
+						
 						p2p_user.HOST=p2p_user.BACKUP_HOST;
-						p2p_user.gui.set_text("Connecting to backup server.");
 					}
 					//emergency catch if no one is assigned to be emergency host, this user hosts
 					else{

@@ -15,7 +15,7 @@ import GUI.GUI;
 public class p2p_user {
 
 	private static final int PORT = 8888;
-	private static final String SUBNET = "10.1.32.";//this is the TEMP local subnet address
+	public static final String SUBNET = "10.1.32.";//this is the TEMP local subnet address
 	public static String HOST = "";
 	public static String BACKUP_HOST="";
 	
