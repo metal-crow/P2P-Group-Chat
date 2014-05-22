@@ -27,7 +27,6 @@ public class p2p_user {
 	
 	private static boolean connecting=true;
 	public static boolean connected=false;
-	private static boolean wanttoconnect=true;
 	
 	public static RSA Users_RSA= new RSA(1024);
 	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
@@ -48,7 +47,7 @@ public class p2p_user {
         f.setVisible(true);
 		
 		while(connecting){
-			if(!connected && wanttoconnect){
+			if(!connected){
 				gui.resetConnectedUsers();
 				
 				//starting up for the first time, dont know host
@@ -155,9 +154,8 @@ public class p2p_user {
 		else{
 			//for user to exit (others can see)
 			if(users_input.equals("/exit")){
-				connected=false;
 				connecting=false;
-				wanttoconnect=false;
+				connected=false;
 				try{
 					new PrintWriter(clientsocket.getOutputStream(), true).println("<"+name+">"+" : "+users_input);
 				}catch(IOException u){
