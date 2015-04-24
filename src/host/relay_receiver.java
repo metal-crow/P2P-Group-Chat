@@ -42,7 +42,7 @@ public class relay_receiver implements Runnable{
 				if(inputstring!=null && inputstring.length()>0){
 					
 					//user is inform us of their ip. Add to file, and dont relay to other users
-					if(inputstring.matches("Local ip=[0-9]+")){
+					if(inputstring.matches("User ip=[0-9.]+")){
 						String ip=inputstring.substring(inputstring.indexOf("=")+1);
 						user.setIP(ip);
 						connection_listener.connected_users.set(connection_listener.connected_users.indexOf(user),user);

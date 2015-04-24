@@ -15,7 +15,6 @@ import GUI.GUI;
 public class p2p_user {
 
 	private static final int PORT = 8888;
-	public static final String SUBNET = "10.1.32.";//this is the TEMP local subnet address
 	public static String HOST = "";
 	public static String BACKUP_HOST="";
 	
@@ -26,7 +25,7 @@ public class p2p_user {
 	public static String name="undefined";
 	
 	private static boolean connecting=true;
-	public static boolean connected=false;
+	public static volatile boolean connected=false;
 	
 	public static RSA Users_RSA= new RSA(1024);
 	public static ArrayList<RSA> other_users_public_keys=new ArrayList<RSA>();
@@ -79,6 +78,7 @@ public class p2p_user {
 					}
 					
 					try {
+					    //connect to your own server
 						gui.set_text(InetAddress.getLocalHost().getHostAddress()+" is your ip");
 						clientsocket = new Socket(InetAddress.getLocalHost().getHostAddress(), PORT);
 					} catch (IOException e) {
@@ -91,7 +91,7 @@ public class p2p_user {
 				else if(hosting.equals("c")){
 					//starting up for the first time, dont know host. This is bypassed for reconnect
 					if(HOST.equals("")){
-						gui.set_text("Please enter the last digits of the host's local ip (e.x. for ip 10.1.32.81 you input 81)");
+						gui.set_text("Please enter the host's ip");
 						
 						//block to wait for user's response
 						synchronized (LOCK) {
@@ -106,7 +106,7 @@ public class p2p_user {
 					}
 					
 					try {
-						clientsocket = new Socket(SUBNET+HOST, PORT);
+						clientsocket = new Socket(HOST, PORT);
 						connected=true;
 					} catch (IOException e) {
 						gui.set_text("error connecting to server");
@@ -121,7 +121,7 @@ public class p2p_user {
 					//tell server your local ip
 					try {
 						String ip=InetAddress.getLocalHost().getHostAddress();
-						new PrintWriter(clientsocket.getOutputStream(), true).println("Local ip="+ip.substring(ip.lastIndexOf(".")+1));
+						new PrintWriter(clientsocket.getOutputStream(), true).println("User ip="+ip);
 					} catch (IOException e) {
 						gui.set_text("Unable to inform host of ip. You cannot become an emergency host.");
 					}
@@ -142,7 +142,7 @@ public class p2p_user {
 				hosting="c";
 			}
 			
-			else if(users_input.matches("[0-9]+")){
+			else if(users_input.matches("[0-9.]+")){
 				HOST=users_input;
 			}
 			//unblock

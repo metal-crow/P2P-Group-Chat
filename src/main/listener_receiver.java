@@ -44,7 +44,7 @@ public class listener_receiver implements Runnable{
 							p2p_user.gui.set_text("Unable to verify you are the emergency host.");
 						}
 						//if you are the emergency host
-						if((p2p_user.SUBNET+p2p_user.BACKUP_HOST).equals(thisip)){
+						if((p2p_user.BACKUP_HOST).equals(thisip)){
 							p2p_user.hosting="h";
 							p2p_user.gui.set_text("Recreating server.");
 						}
